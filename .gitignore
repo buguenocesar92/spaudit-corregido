@@ -1,0 +1,7 @@
+# Evidencia del cliente: nombre del colegio, manuales internos
+evidencia/
+salida/
+**/*.csv
+.env
+.env.*
+**/*.local.json

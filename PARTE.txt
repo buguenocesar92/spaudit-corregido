@@ -1,0 +1,135 @@
+═══════════════════════════════════════════════════════════════════════════════
+  PARTE — Herramienta de auditoría de cumplimiento y ciberseguridad
+  Saint Patrick School · Manual de Procedimientos 2026-II
+═══════════════════════════════════════════════════════════════════════════════
+
+QUÉ ES ESTO
+
+Una herramienta de auditoría que compara lo que el Manual de Procedimientos del
+colegio declara contra lo que se puede comprobar realmente, y lo contrasta con el
+marco legal chileno aplicable.
+
+Fue construida a partir de dos documentos:
+  1. "Manual de Procedimientos de la Actividad Informática" (56 páginas,
+     procedimientos 1 a 27).
+  2. "Directiva de Contratación Pública N° 44/2026" de ChileCompra
+     (26 páginas, Resolución Exenta de 12-03-2026).
+
+La pregunta que responde es: ¿qué parte de lo que el manual dice que se hace,
+está efectivamente pasando?
+
+
+CÓMO EJECUTARLA
+
+  1. Abrir una terminal en esta carpeta.
+
+  2. Recoger evidencia de los equipos Windows del colegio (sólo lectura,
+     no modifica nada):
+
+        powershell -ExecutionPolicy Bypass -File powershell\recolectar-evidencia.ps1
+
+     Ejecutarla en: el controlador de dominio, un equipo de sala y, si se puede,
+     un equipo dentro de la red de cámaras.
+
+  3. Auditar:
+
+        python auditar.py
+
+  4. Abrir el informe:  salida\informe-auditoria.html
+
+  Requisito único: Python 3.8 o superior. No instala nada más.
+
+
+QUÉ NECESITA PYTHON
+
+  - No tiene dependencias externas: usa sólo la biblioteca estándar.
+  - Las consultas de red (DNS, TLS, sitio web) se hacen por DNS sobre HTTPS,
+    por eso no necesita instalar dnspython ni requests.
+  - Si Python no está instalado, basta con instalarlo desde python.org
+    marcando "Add Python to PATH".
+
+
+QUÉ YA ESTÁ VERIFICADO
+
+  Estas comprobaciones no necesitan evidencia interna y se hicieron desde
+  Internet el 17-10-2026. Están en salida\evidencia_viva.json.
+
+  · El dominio saintpatricktemuco.cl NO publica registro SPF.
+  · El sitio web NO envía cabeceras de seguridad (HSTS, CSP,
+    X-Content-Type-Options, X-Frame-Options, Referrer-Policy).
+  · El sitio declara su versión de WordPress y tiene XML-RPC activo
+    (vector histórico de fuerza bruta contra cuentas WordPress).
+  · El certificado TLS está vigente, con TLS 1.3, y la redirección
+    de HTTP a HTTPS funciona. Eso sí está correcto.
+
+
+QUÉ NO SE PUDO VERIFICAR Y POR QUÉ
+
+  144 de los 147 controles quedaron como "Sin verificar", que NO es lo mismo
+  que "incumple": significa que todavía no hay evidencia que lo compruebe.
+
+  Motivo: falta acceso a los equipos internos. Para completarlos hay que:
+
+  a) Ejecutar el script PowerShell y copiar la carpeta evidencia\red.
+  b) Copiar a evidencia\docs\ los documentos que existan (inventario,
+     mantenimiento, respaldos, política de videovigilancia, inventario de
+     tratamientos de datos, contratos con proveedores).
+  c) Volver a ejecutar: python auditar.py
+
+
+ESTADOS DEL INFORME
+
+  CUMPLE          hay evidencia y es correcta
+  PARCIAL         hay evidencia, pero incompleta
+  NO CUMPLE       hay evidencia y demuestra el incumplimiento
+  SIN VERIFICAR   no hay evidencia suficiente (es una tarea, no un fallo)
+  NO APLICA       el control no corresponde a esta organización
+
+  Regla del motor: un control sin evidencia NUNCA se marca como cumplido.
+
+
+DOS PLAZOS QUE IMPORTAN
+
+  · Ley 21.719 (protección de datos personales): entra en vigor el
+    1 de diciembre de 2026. Obliga a inventariar los tratamientos de datos,
+    a evaluar impacto antes de tratar datos sensibles de menores y a comunicar
+    las brechas. Ninguno de los 27 procedimientos del manual lo contempla hoy.
+
+  · Directiva 44/2026: está dirigida a los órganos públicos, y un colegio
+    privado no lo es automáticamente. El control D44-01 deja anotada la
+    pregunta: si un organismo del Estado participa en la administración del
+    colegio y se reciben fondos públicos por 1.500 UTM o más mensuales
+    (aprox. 108 millones de pesos al año con la UTM vigente), la Ley 19.886
+    podría alcanzar al colegio. Eso debe confirmarlo la asesoría jurídica.
+
+
+ARCHIVOS PRINCIPALES
+
+  auditar.py                       punto de entrada
+  README.md                        documentación completa
+  PARTE.txt                        esta nota de traspaso
+  evidencia\LEEME.txt              qué evidencia gathered y dónde ponerla
+  powershell\recolectar-evidencia.ps1   recolector para equipos Windows
+  salida\informe-auditoria.html    informe final (HTML)
+  salida\informe-auditoria.json   informe en datos, para automatizar
+  salida\evidencia_viva.json       evidencia de las comprobaciones externas
+  spaudit\controles_*.py           el catálogo: son DATOS, no código
+
+  El catálogo se edita sin tocar el motor: cada control dice qué dice el manual,
+  en qué página, qué brecha tiene y qué acción la cierra.
+
+  Utilidades de mantenimiento del catálogo:
+    python herramientas\comprobar.py         verifica que todo compile
+    python herramientas\validar_catalogo.py  IDs únicos y argumentos completos
+    python herramientas\ver_catalogo.py      lista los controles
+    python herramientas\ver_catalogo.py SP-13-04    muestra uno en detalle
+
+
+ADVERTENCIA SOBRE LAS CONCLUSIONES LEGALES
+
+  Este informe es una herramienta de apoyo técnico. Las conclusiones legales,
+  en particular el alcance de la Ley 19.886 y de la Ley 21.719 para esta
+  organización, deben confirmarse con la asesoría jurídica del colegio antes
+  de tomar decisiones en base a ellas.
+
+═══════════════════════════════════════════════════════════════════════════════
